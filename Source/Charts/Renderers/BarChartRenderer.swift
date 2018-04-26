@@ -205,6 +205,13 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
     
     private var _barShadowRectBuffer: CGRect = CGRect()
     
+    var stackedRects: [StackedRectIndex:CGRect] = [:]
+    
+    struct StackedRectIndex: Hashable {
+        let set: Int
+        let stack: Int
+    }
+    
     @objc open func drawDataSet(context: CGContext, dataSet: IBarChartDataSet, index: Int)
     {
         guard let dataProvider = dataProvider else { return }
@@ -255,6 +262,8 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                 
                 context.setFillColor(dataSet.barShadowColor.cgColor)
                 context.fill(_barShadowRectBuffer)
+                
+                
             }
         }
         
@@ -279,6 +288,8 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                 
                 context.setFillColor(dataSet.barShadowColor.cgColor)
                 context.fill(barRect)
+
+                stackedRects[StackedRectIndex(set: index, stack: j)] = barRect
             }
         }
         
@@ -317,6 +328,8 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                 context.setLineWidth(borderWidth)
                 context.stroke(barRect)
             }
+            
+            stackedRects[StackedRectIndex(set: index, stack: j)] = barRect
         }
         
         context.restoreGState()
@@ -540,8 +553,9 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                                 }
                                 else if value >= 0.0
                                 {
+                                    let lastPosY = posY
                                     posY += value
-                                    y = posY
+                                    y = (posY + lastPosY)/2
                                 }
                                 else
                                 {
@@ -572,18 +586,25 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                                 
                                 if dataSet.isDrawValuesEnabled
                                 {
-                                    drawValue(
-                                        context: context,
-                                        value: formatter.stringForValue(
+                                    let text = formatter.stringForValue(
                                             vals[k],
                                             entry: e,
                                             dataSetIndex: dataSetIndex,
-                                            viewPortHandler: viewPortHandler),
-                                        xPos: x,
-                                        yPos: y,
-                                        font: valueFont,
-                                        align: .center,
-                                        color: dataSet.valueTextColorAt(index))
+                                            viewPortHandler: viewPortHandler, stackedIndex: k)
+
+                                    if let stackRect = stackedRects[StackedRectIndex(set: dataSetIndex, stack: k)] {
+                                        drawCentered(text: text, rect: stackRect, font: valueFont, textColor: dataSet.valueTextColorAt(index))
+                                    }
+                                    else {
+                                        drawValue(
+                                                context: context,
+                                                value: text,
+                                                xPos: x,
+                                                yPos: y,
+                                                font: valueFont,
+                                                align: .center,
+                                                color: dataSet.valueTextColorAt(index))
+                                    }
                                 }
                                 
                                 if let icon = e.icon, dataSet.isDrawIconsEnabled
@@ -605,10 +626,25 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
         }
     }
     
+    func drawCentered(text: String, rect: CGRect, font: NSUIFont, textColor: NSUIColor) {
+        let style = NSMutableParagraphStyle()
+        style.alignment = .center
+        
+        var attributes: [NSAttributedStringKey: Any] = [:]
+        attributes[NSAttributedStringKey.font] = font
+        attributes[NSAttributedStringKey.paragraphStyle] = style
+        attributes[.foregroundColor] = textColor
+        
+        let attributed = NSAttributedString(string: text, attributes: attributes)
+        let height = attributed.boundingRect(with: CGSize(width: rect.width, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil).height
+        let newRect = CGRect(x: rect.origin.x, y: rect.origin.y + (rect.size.height - height)/2, width: rect.width, height: rect.height)
+        attributed.draw(in: newRect)
+    }
+    
     /// Draws a value at the specified x and y position.
     @objc open func drawValue(context: CGContext, value: String, xPos: CGFloat, yPos: CGFloat, font: NSUIFont, align: NSTextAlignment, color: NSUIColor)
     {
-        ChartUtils.drawText(context: context, text: value, point: CGPoint(x: xPos, y: yPos), align: align, attributes: [NSAttributedStringKey.font: font, NSAttributedStringKey.foregroundColor: color])
+       ChartUtils.drawText(context: context, text: value, point: CGPoint(x: xPos, y: yPos), align: align, attributes: [NSAttributedStringKey.font: font, NSAttributedStringKey.foregroundColor: color])
     }
     
     open override func drawExtras(context: CGContext)

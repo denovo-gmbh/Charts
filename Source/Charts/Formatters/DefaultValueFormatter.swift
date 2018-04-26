@@ -14,6 +14,10 @@ import Foundation
 @objc(ChartDefaultValueFormatter)
 open class DefaultValueFormatter: NSObject, IValueFormatter
 {
+    public func stringForValue(_ value: Double, entry: ChartDataEntry, dataSetIndex: Int, viewPortHandler: ViewPortHandler?, stackedIndex: Int) -> String {
+        return stringForValue(value, entry: entry, dataSetIndex: dataSetIndex, viewPortHandler: viewPortHandler)
+    }
+    
     public typealias Block = (
         _ value: Double,
         _ entry: ChartDataEntry,

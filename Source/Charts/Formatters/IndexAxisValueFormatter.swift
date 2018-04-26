@@ -50,7 +50,8 @@ open class IndexAxisValueFormatter: NSObject, IAxisValueFormatter
     }
     
     open func stringForValue(_ value: Double,
-                             axis: AxisBase?) -> String
+                             axis: AxisBase?,
+                             position: XAxis.LabelPosition) -> String
     {
         let index = Int(value.rounded())
         guard values.indices.contains(index), index == Int(value) else { return "" }

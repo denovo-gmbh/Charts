@@ -25,6 +25,6 @@ public protocol IAxisValueFormatter: class
     /// - parameter axis:            the axis that the value belongs to
     ///
     func stringForValue(_ value: Double,
-                        axis: AxisBase?) -> String
+                        axis: AxisBase?, position: XAxis.LabelPosition) -> String
     
 }

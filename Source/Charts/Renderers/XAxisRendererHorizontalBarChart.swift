@@ -91,29 +91,29 @@ open class XAxisRendererHorizontalBarChart: XAxisRenderer
         
         if xAxis.labelPosition == .top
         {
-            drawLabels(context: context, pos: viewPortHandler.contentRight + xoffset, anchor: CGPoint(x: 0.0, y: 0.5))
+            drawLabels(context: context, pos: viewPortHandler.contentRight + xoffset, anchor: CGPoint(x: 0.0, y: 0.5), axisPosition: xAxis.labelPosition)
         }
         else if xAxis.labelPosition == .topInside
         {
-            drawLabels(context: context, pos: viewPortHandler.contentRight - xoffset, anchor: CGPoint(x: 1.0, y: 0.5))
+            drawLabels(context: context, pos: viewPortHandler.contentRight - xoffset, anchor: CGPoint(x: 1.0, y: 0.5), axisPosition: xAxis.labelPosition)
         }
         else if xAxis.labelPosition == .bottom
         {
-            drawLabels(context: context, pos: viewPortHandler.contentLeft - xoffset, anchor: CGPoint(x: 1.0, y: 0.5))
+            drawLabels(context: context, pos: viewPortHandler.contentLeft - xoffset, anchor: CGPoint(x: 1.0, y: 0.5), axisPosition: xAxis.labelPosition)
         }
         else if xAxis.labelPosition == .bottomInside
         {
-            drawLabels(context: context, pos: viewPortHandler.contentLeft + xoffset, anchor: CGPoint(x: 0.0, y: 0.5))
+            drawLabels(context: context, pos: viewPortHandler.contentLeft + xoffset, anchor: CGPoint(x: 0.0, y: 0.5), axisPosition: xAxis.labelPosition)
         }
         else
         { // BOTH SIDED
-            drawLabels(context: context, pos: viewPortHandler.contentRight + xoffset, anchor: CGPoint(x: 0.0, y: 0.5))
-            drawLabels(context: context, pos: viewPortHandler.contentLeft - xoffset, anchor: CGPoint(x: 1.0, y: 0.5))
+            drawLabels(context: context, pos: viewPortHandler.contentRight + xoffset, anchor: CGPoint(x: 0.0, y: 0.5), axisPosition: XAxis.LabelPosition.top)
+            drawLabels(context: context, pos: viewPortHandler.contentLeft - xoffset, anchor: CGPoint(x: 1.0, y: 0.5), axisPosition: XAxis.LabelPosition.bottom)
         }
     }
 
     /// draws the x-labels on the specified y-position
-    open override func drawLabels(context: CGContext, pos: CGFloat, anchor: CGPoint)
+    open override func drawLabels(context: CGContext, pos: CGFloat, anchor: CGPoint, axisPosition: XAxis.LabelPosition)
     {
         guard
             let xAxis = self.axis as? XAxis,
@@ -148,7 +148,7 @@ open class XAxisRendererHorizontalBarChart: XAxisRenderer
             
             if viewPortHandler.isInBoundsY(position.y)
             {
-                if let label = xAxis.valueFormatter?.stringForValue(xAxis.entries[i], axis: xAxis)
+                if let label = xAxis.valueFormatter?.stringForValue(xAxis.entries[i], axis: xAxis, position: axisPosition)
                 {
                     drawLabel(
                         context: context,

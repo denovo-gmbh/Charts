@@ -89,7 +89,8 @@ open class DefaultAxisValueFormatter: NSObject, IAxisValueFormatter
     }
     
     open func stringForValue(_ value: Double,
-                               axis: AxisBase?) -> String
+                               axis: AxisBase?,
+                               position: XAxis.LabelPosition) -> String
     {
         if let block = block {
             return block(value, axis)
