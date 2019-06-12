@@ -207,6 +207,9 @@ open class ChartBaseDataSet: NSObject, IChartDataSet
         {
             index = 0
         }
+        if colors.count <= 0 {
+            return NSUIColor.gray
+        }
         return colors[index % colors.count]
     }
     
